@@ -10,6 +10,7 @@ StringMap: TypeAlias = dict[str, str]
 StringSetMap: TypeAlias = dict[str, set[str]]
 IrregularMap: TypeAlias = dict[str, str]
 CandidateMap: TypeAlias = dict[str, list[str]]
+NestedStringMap: TypeAlias = dict[str, dict[str, str]]
 
 
 def _load_json(name: str) -> object:
@@ -39,7 +40,20 @@ def load_french_irregulars() -> CandidateMap:
     return {key: list(value) for key, value in raw.items()}
 
 
+@lru_cache(maxsize=1)
+def load_lemma_overrides() -> NestedStringMap:
+    raw = _load_json("lemma_overrides.json")
+    return {language: dict(values) for language, values in raw.items()}
+
+
+@lru_cache(maxsize=1)
+def load_japanese_compound_suffixes() -> set[str]:
+    return set(_load_json("japanese_compound_suffixes.json"))
+
+
 PREFIX_TO_LANGUAGE = load_prefix_to_language()
 STOPWORDS = load_stopwords()
 GERMAN_IRREGULARS = load_german_irregulars()
 FRENCH_IRREGULARS = load_french_irregulars()
+LEMMA_OVERRIDES = load_lemma_overrides()
+JAPANESE_COMPOUND_SUFFIXES = load_japanese_compound_suffixes()

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from fugashi import Tagger
 
+from lemmatizer.config import JAPANESE_COMPOUND_SUFFIXES, LEMMA_OVERRIDES
 from lemmatizer.models import LemmaToken
 from lemmatizer.reference import ReferenceSnapper
 
@@ -42,12 +43,16 @@ def lemmatize_japanese(text: str, snapper: ReferenceSnapper) -> list[LemmaToken]
                 lemma_parts.append(_lemma_or_surface(parsed[j]))
                 j += 1
             surface = "".join(surface_parts)
-            lemma = snapper.snap(surface, ["".join(lemma_parts), surface])
+            lemma = snapper.snap(surface, [_japanese_surface_noun(surface), surface, "".join(lemma_parts)])
+            lemma = LEMMA_OVERRIDES.get("jp", {}).get(lemma, lemma)
             if lemma != "\u70ba":
                 tokens.append(LemmaToken(surface=surface, lemma=lemma, pos=JA_NOUN, analyzer="fugashi"))
             index = j
             continue
         if feature.pos1 == JA_VERB:
+            if _is_particle_expression(parsed, index):
+                index += 2
+                continue
             if (
                 index + 1 < len(parsed)
                 and parsed[index + 1].surface == "\u305a"
@@ -71,13 +76,23 @@ def lemmatize_japanese(text: str, snapper: ReferenceSnapper) -> list[LemmaToken]
             if index + 1 < len(parsed) and parsed[index + 1].feature.pos1 == JA_VERB:
                 candidates.insert(0, word.surface + _lemma_or_surface(parsed[index + 1]))
             lemma = snapper.snap(word.surface, candidates)
-            if lemma not in {"居る", "呉れる"}:
+            lemma = LEMMA_OVERRIDES.get("jp", {}).get(lemma, lemma)
+            if lemma not in {"居る", "呉れる", "来る"}:
                 tokens.append(LemmaToken(surface=word.surface, lemma=lemma, pos=JA_VERB, analyzer="fugashi"))
             if index + 1 < len(parsed) and parsed[index + 1].feature.pos1 == JA_VERB:
                 index += 2
                 continue
         elif feature.pos1 in {JA_ADJ, JA_ADV, JA_ADJECTIVAL_NOUN, JA_ADNOMINAL}:
-            lemma = snapper.snap(word.surface, [_lemma_or_surface(word), word.surface, _japanese_surface_adjective(word.surface)])
+            if word.surface == "\u3053\u306e":
+                index += 1
+                continue
+            if index + 1 < len(parsed) and parsed[index + 1].feature.pos1 == JA_SUFFIX:
+                surface = word.surface + parsed[index + 1].surface
+                tokens.append(LemmaToken(surface=surface, lemma=surface, pos=feature.pos1, analyzer="fugashi"))
+                index += 2
+                continue
+            lemma = snapper.snap(word.surface, [_japanese_surface_adjective(word.surface), word.surface, _lemma_or_surface(word)])
+            lemma = LEMMA_OVERRIDES.get("jp", {}).get(lemma, lemma)
             tokens.append(LemmaToken(surface=word.surface, lemma=lemma, pos=feature.pos1, analyzer="fugashi"))
         index += 1
     return tokens
@@ -98,7 +113,7 @@ def _can_continue_japanese_noun_compound(parsed: list[object], index: int) -> bo
         return False
     previous = parsed[index - 1].surface if index > 0 else ""
     current = parsed[index].surface
-    if previous in {"暗号化", "電子"}:
+    if previous in {"暗号化", "電子"} or current in JAPANESE_COMPOUND_SUFFIXES:
         return True
     return len(current) <= 2 and current.isascii()
 
@@ -127,11 +142,25 @@ def _is_japanese_auxiliary_noun(parsed: list[object], index: int) -> bool:
     return index > 0 and parsed[index - 1].feature.pos1 == JA_VERB
 
 
+def _is_particle_expression(parsed: list[object], index: int) -> bool:
+    if parsed[index].surface not in {"とっ", "取っ"}:
+        return False
+    if index == 0 or parsed[index - 1].surface != "に":
+        return False
+    return index + 1 < len(parsed) and parsed[index + 1].surface == "て"
+
+
 def _japanese_surface_adjective(surface: str) -> str:
     if surface == "\u5c0f\u3055\u306a":
         return "\u5c0f\u3055\u3044"
     if surface.endswith("\u306b"):
         return surface[:-1]
+    if surface.endswith("\u304f"):
+        return surface[:-1] + "\u3044"
+    return surface
+
+
+def _japanese_surface_noun(surface: str) -> str:
     if surface.endswith("\u304f"):
         return surface[:-1] + "\u3044"
     return surface

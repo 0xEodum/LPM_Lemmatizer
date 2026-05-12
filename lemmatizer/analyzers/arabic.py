@@ -3,7 +3,7 @@ from __future__ import annotations
 import qalsadi.lemmatizer
 from pyarabic import araby
 
-from lemmatizer.config import STOPWORDS
+from lemmatizer.config import LEMMA_OVERRIDES, STOPWORDS
 from lemmatizer.models import LemmaToken
 from lemmatizer.reference import ReferenceSnapper
 from lemmatizer.text_utils import PUNCT_OR_NUMBER_RE
@@ -22,6 +22,7 @@ def lemmatize_arabic(text: str, snapper: ReferenceSnapper) -> list[LemmaToken]:
         else:
             candidates = [lemmatizer.lemmatize(surface), *surface_candidates]
         lemma = snapper.snap(surface, candidates)
+        lemma = LEMMA_OVERRIDES.get("ar", {}).get(lemma, LEMMA_OVERRIDES.get("ar", {}).get(surface, lemma))
         if _should_keep(lemma):
             tokens.append(LemmaToken(surface=surface, lemma=lemma, pos="", analyzer="qalsadi"))
     return tokens

@@ -126,3 +126,60 @@ def test_text_cli_prompts_interactively_without_text_argument() -> None:
     assert "Language" in result.stdout
     assert "따뜻하다" in result.stdout
     assert "봄바람" in result.stdout
+
+
+def test_blind_german_casing_and_prefix_regressions() -> None:
+    lemmas = lemmatize_text("Dicke Flocken lagen auf Ästen. Seine Haut brannte. Tief einatmen.", "de").unique_lemmas
+
+    assert "Flocke" in lemmas
+    assert "Ast" in lemmas
+    assert "Haut" in lemmas
+    assert "einatmen" in lemmas
+    assert "hauen" not in lemmas
+    assert "flocken" not in lemmas
+
+
+def test_blind_french_clitics_and_participles() -> None:
+    lemmas = lemmatize_text("L'arrivée d'automne révèle l'essence, observant les tables.", "fr").unique_lemmas
+
+    assert "arrivée" in lemmas
+    assert "automne" in lemmas
+    assert "essence" in lemmas
+    assert "observer" in lemmas
+    assert "table" in lemmas
+    assert "l'arrivée" not in lemmas
+    assert "tabler" not in lemmas
+
+
+def test_blind_arabic_prefix_safety_and_plural_regressions() -> None:
+    lemmas = lemmatize_text("وراءها أشجار عالية وبعيدا قصص قديمة وخيام منسوجة.", "ar").unique_lemmas
+
+    assert "وراءها" in lemmas
+    assert "شجرة" in lemmas
+    assert "بعيد" in lemmas
+    assert "قصة" in lemmas
+    assert "خيمة" in lemmas
+    assert "راءها" not in lemmas
+    assert "شجار" not in lemmas
+
+
+def test_blind_korean_nominal_suffix_and_derivation_regressions() -> None:
+    lemmas = lemmatize_text("평화로웠다. 단풍잎들이 조용히 떨어졌다. 노스님은 아름다움을 느꼈다.", "kr").unique_lemmas
+
+    assert "평화롭다" in lemmas
+    assert "단풍잎" in lemmas
+    assert "조용하다" in lemmas
+    assert "노스님" in lemmas
+    assert "아름다움" in lemmas
+    assert "평화하다" not in lemmas
+    assert "단풍잎들" not in lemmas
+
+
+def test_blind_japanese_surface_spelling_regressions() -> None:
+    lemmas = lemmatize_text("暖かく、花びらのさえずり。私にとって大切な賽銭箱。", "jp").unique_lemmas
+
+    assert "暖かい" in lemmas
+    assert "花びら" in lemmas
+    assert "さえずり" in lemmas
+    assert "賽銭箱" in lemmas
+    assert "取る" not in lemmas

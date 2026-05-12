@@ -9,6 +9,15 @@ This project builds lemma lists from the paired `*_text.txt` files. The file pre
 - `jp` -> Japanese
 - `kr` -> Korean
 
+The implementation is split by responsibility:
+
+- `lemmatizer/core.py` orchestrates language dispatch and scoring.
+- `lemmatizer/analyzers/` contains language-specific analyzers.
+- `lemmatizer/reference.py` handles optional canonical-vocabulary snapping.
+- `lemmatizer/io.py` handles text/entity file discovery and parsing.
+- `lemmatizer/models.py` contains shared result dataclasses.
+- `lemmatizer/resources/*.json` contains language aliases, stopwords, and irregular forms.
+
 Install dependencies in the existing environment:
 
 ```powershell
@@ -22,6 +31,12 @@ Process the expanded dataset and write lemma lists:
 ```
 
 The `--reference-vocabulary` flag uses the matching `*_entities.txt` file as a canonical lemma vocabulary. Without that flag, the system runs as a raw lemmatizer for new text and only uses the entity files for scoring.
+
+Run the blind texts without target entity files:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\lemmatize.py --all --root blind_texts --write-dir output_blind
+```
 
 Single-file examples:
 

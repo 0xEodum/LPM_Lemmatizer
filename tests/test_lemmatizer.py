@@ -8,11 +8,20 @@ from lemmatizer.core import (
     lemmatize_text,
     parse_lemma_list,
 )
+from lemmatizer.config import PREFIX_TO_LANGUAGE, STOPWORDS
 
 
 ROOT = Path(__file__).resolve().parents[1]
 FIRST_PASS = ROOT / "first_pass"
 EXPANDED = ROOT / "expanded_texts"
+BLIND = ROOT / "blind_texts"
+
+
+def test_language_metadata_is_loaded_from_resource_files() -> None:
+    assert PREFIX_TO_LANGUAGE["ko"] == "kr"
+    assert PREFIX_TO_LANGUAGE["ja"] == "jp"
+    assert "nach" in STOPWORDS["de"]
+    assert "avec" in STOPWORDS["fr"]
 
 
 def test_parse_lemma_list_reads_comma_separated_utf8() -> None:
@@ -28,6 +37,13 @@ def test_discover_text_files_ignores_entity_files() -> None:
 
     assert [item.prefix for item in files] == ["ar", "de", "fr", "hy", "jp", "kr"]
     assert all(item.text_path.name.endswith("_text.txt") for item in files)
+
+
+def test_blind_texts_are_discovered_without_entity_files() -> None:
+    files = discover_text_files(BLIND)
+
+    assert [item.prefix for item in files] == ["ar", "de", "fr", "hy", "jp", "kr"]
+    assert all(item.entities_path is None for item in files)
 
 
 def test_language_specific_dictionary_forms() -> None:

@@ -8,7 +8,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from lemmatizer.core import PREFIX_TO_LANGUAGE, lemmatize_text
+from lemmatizer.config import PREFIX_TO_LANGUAGE
+from lemmatizer.core import lemmatize_text
 
 
 def main() -> int:

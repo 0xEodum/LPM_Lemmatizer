@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 FIRST_PASS = ROOT / "first_pass"
 EXPANDED = ROOT / "expanded_texts"
 BLIND = ROOT / "blind_texts"
+EXT1 = ROOT / "ext1"
 
 
 def test_language_metadata_is_loaded_from_resource_files() -> None:
@@ -44,6 +45,17 @@ def test_blind_texts_are_discovered_without_entity_files() -> None:
 
     assert [item.prefix for item in files] == ["ar", "de", "fr", "hy", "jp", "kr"]
     assert all(item.entities_path is None for item in files)
+
+
+def test_nested_ext1_texts_are_discovered_with_language_subfolders() -> None:
+    files = discover_text_files(EXT1)
+
+    assert len(files) == 12
+    assert files[0].prefix == "ar_1"
+    assert files[0].language == "ar"
+    assert files[0].entities_path == EXT1 / "ar" / "1_entities.txt"
+    assert files[-1].prefix == "kr_2"
+    assert files[-1].language == "kr"
 
 
 def test_language_specific_dictionary_forms() -> None:

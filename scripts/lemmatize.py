@@ -19,7 +19,7 @@ def main() -> int:
     parser.add_argument("--all", action="store_true", help="Process every *_text.txt file in --root.")
     parser.add_argument("--root", type=Path, default=ROOT, help="Directory used with --all.")
     parser.add_argument("--write-dir", type=Path, help="Write <prefix>_lemmas.txt files into this directory.")
-    parser.add_argument("--backend", choices=["current", "stanza"], default="current", help="Lemmatization backend.")
+    parser.add_argument("--backend", choices=["current", "stanza", "hybrid"], default="current", help="Lemmatization backend.")
     parser.add_argument("--json", action="store_true", help="Print JSON for single-file mode.")
     parser.add_argument(
         "--reference-vocabulary",

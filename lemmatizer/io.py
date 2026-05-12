@@ -14,10 +14,13 @@ def parse_lemma_list(path: Path) -> tuple[str, ...]:
 
 def discover_text_files(root: Path) -> tuple[TextFilePair, ...]:
     pairs = []
-    for text_path in sorted(root.glob("*_text.txt")):
-        prefix = text_path.name.removesuffix("_text.txt")
-        language = PREFIX_TO_LANGUAGE.get(prefix, prefix)
-        entities_path = root / f"{prefix}_entities.txt"
+    for text_path in sorted(root.rglob("*_text.txt")):
+        stem_prefix = text_path.name.removesuffix("_text.txt")
+        parent_prefix = text_path.parent.name
+        language_key = parent_prefix if parent_prefix in PREFIX_TO_LANGUAGE else stem_prefix
+        language = PREFIX_TO_LANGUAGE.get(language_key, language_key)
+        prefix = stem_prefix if text_path.parent == root else f"{language_key}_{stem_prefix}"
+        entities_path = text_path.with_name(f"{stem_prefix}_entities.txt")
         pairs.append(
             TextFilePair(
                 prefix=prefix,

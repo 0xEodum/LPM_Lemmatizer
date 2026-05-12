@@ -44,6 +44,12 @@ Run the experimental Stanza backend:
 .\.venv\Scripts\python.exe scripts\lemmatize.py --all --root blind_texts --backend stanza --write-dir output_stanza_blind
 ```
 
+Run nested datasets such as `ext1`:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\lemmatize.py --all --root ext1 --backend hybrid --write-dir output_ext1_hybrid
+```
+
 Single-file examples:
 
 ```powershell

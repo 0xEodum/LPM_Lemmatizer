@@ -19,6 +19,7 @@ def main() -> int:
     parser.add_argument("--all", action="store_true", help="Process every *_text.txt file in --root.")
     parser.add_argument("--root", type=Path, default=ROOT, help="Directory used with --all.")
     parser.add_argument("--write-dir", type=Path, help="Write <prefix>_lemmas.txt files into this directory.")
+    parser.add_argument("--backend", choices=["current", "stanza"], default="current", help="Lemmatization backend.")
     parser.add_argument("--json", action="store_true", help="Print JSON for single-file mode.")
     parser.add_argument(
         "--reference-vocabulary",
@@ -33,11 +34,20 @@ def main() -> int:
         parser.error("Either --input or --all is required.")
     language = args.language
     if args.expected:
-        report = lemmatize_pair(args.input, args.expected, language=language, use_reference=args.reference_vocabulary)
+        report = lemmatize_pair(
+            args.input,
+            args.expected,
+            language=language,
+            use_reference=args.reference_vocabulary,
+            backend=args.backend,
+        )
     else:
         if not language:
             language = args.input.name.removesuffix("_text.txt")
-        report = lemmatize_text(args.input.read_text(encoding="utf-8"), language)
+        if args.backend == "stanza":
+            report = lemmatize_pair(args.input, None, language=language, backend="stanza")
+        else:
+            report = lemmatize_text(args.input.read_text(encoding="utf-8"), language)
     if args.write_dir:
         args.write_dir.mkdir(parents=True, exist_ok=True)
         output_path = args.write_dir / f"{args.input.stem.removesuffix('_text')}_lemmas.txt"
@@ -61,6 +71,7 @@ def _run_all(args: argparse.Namespace) -> int:
             pair.entities_path,
             language=pair.language,
             use_reference=args.reference_vocabulary and pair.entities_path is not None,
+            backend=args.backend,
         )
         if args.write_dir:
             output_path = args.write_dir / f"{pair.prefix}_lemmas.txt"

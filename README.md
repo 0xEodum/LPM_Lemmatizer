@@ -38,6 +38,12 @@ Run the blind texts without target entity files:
 .\.venv\Scripts\python.exe scripts\lemmatize.py --all --root blind_texts --write-dir output_blind
 ```
 
+Run the experimental Stanza backend:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\lemmatize.py --all --root blind_texts --backend stanza --write-dir output_stanza_blind
+```
+
 Single-file examples:
 
 ```powershell

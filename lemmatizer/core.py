@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from lemmatizer.analyzers import lemmatize_arabic, lemmatize_japanese, lemmatize_korean, lemmatize_simple
+from lemmatizer.analyzers.stanza_backend import lemmatize_text_stanza
 from lemmatizer.config import PREFIX_TO_LANGUAGE
 from lemmatizer.io import discover_text_files, parse_lemma_list
 from lemmatizer.models import LemmaReport
@@ -16,15 +17,16 @@ def lemmatize_pair(
     *,
     language: str | None = None,
     use_reference: bool = False,
+    backend: str = "current",
 ) -> LemmaReport:
     prefix = text_path.name.removesuffix("_text.txt")
     resolved_language = language or PREFIX_TO_LANGUAGE.get(prefix, prefix)
     expected = parse_lemma_list(expected_path) if expected_path else ()
-    report = lemmatize_text(
-        text_path.read_text(encoding="utf-8"),
-        resolved_language,
-        reference_lemmas=expected if use_reference else (),
-    )
+    text = text_path.read_text(encoding="utf-8")
+    if backend == "stanza":
+        report = lemmatize_text_stanza(text, resolved_language)
+    else:
+        report = lemmatize_text(text, resolved_language, reference_lemmas=expected if use_reference else ())
     if not expected:
         return report
     expected_set = set(expected)

@@ -1,0 +1,27 @@
+**True:**
+dicht, Schneefall, verwandeln, alt, Tannenwald, magisch, Winterlandschaft, kaum, Geräusch, durchbrechen, vollkommen, Stille, während, dick, Flocke, sanft, gefroren, Erde, sinken, einsam, Fuchs, suchen, hastig, Nahrung, hinterlassen, winzig, Spur, unberührt, Schnee, eisig, Kälte, brennen, leicht, Haut, atemberaubend, Aussicht, entschädigen, Unannehmlichkeit, hoch, oben, Ast, krächzen, Rabe, dunkel, Flügel, ausbreiten, majestätisch, davonfliegen, einatmen, tief, spüren, klar, frisch, Luft, Lunge, füllen, Naturwunder, bieten, perfekt, Rückzugsort, hektisch, Alltag
+
+petit, café, parisien, dégager, odeur, réconfortant, grain, torréfié, croissant, chaud, pluie, automne, battre, doucement, vieux, fenêtre, bois, créer, atmosphère, paisible, client, lire, silencieusement, journal, serveur, essuyer, table, chiffon, propre, coin, sombre, musicien, accorder, soigneusement, guitare, acoustique, soudain, clochette, porte, entrée, tinter, joyeusement, annoncer, arrivée, nouveau, visiteur, trempé, os, prendre, gorgée, thé, brûlant, observer, tableau, pittoresque, instant, éphémère, capturer, véritablement, essence, romantique, ville
+
+가을빛, 완연하다, 산사, 아침, 무척, 평화롭다, 오래되다, 목조건물, 위, 붉다, 물들다, 단풍잎, 조용하다, 떨어지다, 내리다, 이끼, 끼다, 돌계단, 따르다, 걷다, 올라가다, 맑다, 풍경, 소리, 바람, 타다, 은은하다, 퍼지다, 마당, 한가운데, 자리, 잡다, 커다랗다, 은행나무, 황금빛, 잎사귀, 눈부시다, 흩뿌리다, 있다, 회색, 승복, 입다, 노스님, 빗자루, 들다, 낙엽, 느리다, 쓸어모으다, 갓, 우려내다, 따뜻하다, 녹차, 향기, 코끝, 스치다, 마음, 차분하다, 가라앉히다, 속세, 번뇌, 잊다, 만들다, 고요하다, 공간, 잠시, 멈추다, 서다, 깊다, 숨, 내쉬다, 자연, 조화, 이루다, 소박하다, 아름다움, 영혼, 위로하다, 주다, 듯하다
+
+առավոտ, արև, շող, լուսավորել, լեռնային, հին, գյուղ, քարաշեն, տուն, օդ, տարածվել, թարմ, թխել, լավաշ, ուրց, թեյ, անուշ, բույր, բակ, խաղալ, երեխա, ուրախ, ծիծաղ, միախառնվել, գետակ, մեղմ, խոխոջանք, տարեց, կին, նստել, ծառ, ստվեր, զրուցել, անցնել, օր, փայտե, հնամաշ, դուռ, ճռռոց, բացվել, ներս, մտնել, հոգնել, ժպտերես, հովիվ, հավատարիմ, շուն, բերել, սար, զովություն, նոր, հավաքել, վայրի, ծաղիկ, խաղաղ, պատկեր, հիշեցնել, հայրենի, բնաշխարհ, անսպառ, գեղեցկություն
+
+غاص, شمس, كثيب, رملي, ذهبي, ترك, سماء, ملون, درجة, أحمر, برتقالي, واحة, هادئ, تمايل, شجرة, نخيل, عالي, بطء, نسيم, عليل, تجمع, بدوي, نار, مخيم, مشتعل, تبادل, قصة, قديم, شرب, قهوة, عربي, معطر, هيل, بعيد, ظلام, عوى, ذئب, وحيد, أضاف, لمسة, غموض, سكون, صحراء, خيمة, منسوج, شعر, قاوم, برودة, ليل, قارس, فضل, حطب, حياة, بسيط, عكس, صمود, إنسان, قسوة, طبيعة
+
+春, 穏やか, 日差し, 古い, 神社, 境内, 暖かい, 照らす, 満開, 桜, 木, 薄紅色, 花びら, 風, 乗る, 静か, 舞い落ちる, 石畳, 参道, 歩く, 遠い, 心地よい, 鳥, さえずり, 聞こえる, 手水舎, 冷たい, 水, 触れる, 心, 体, 清める, 賽銭箱, 前, 立つ, 目, 閉じる, 両手, 合わせる, 日常, 忙しさ, 忘れる, 神聖, 空気, 包む, 瞬間, 最も, 大切, 時間, 未来, 希望, 胸, 抱く, 再び, 活気, ある, 街, 歩き出す
+
+
+
+**Predicted:**
+dicht, Schneefall, verwandeln, alt, Tannenwald, magisch, winterlandschaft, kaum, Geräusch, durchbrechen, vollkommen, stillen, dick, flocken, sanft, gefroren, erden, sinken, einsam, Fuchs, suchen, hastig, nach, Nahrung, hinterlassen, winzig, spuren, unberührt, Schnee, eisig, Kälte, brennen, leicht, hauen, aber, atemberaubend, Aussicht, entschädigen, jeder, Unannehmlichkeit, hoch, oben, ästen, krächzen, Rabe, bevor, er, sein, dunkel, Flügel, ausbreiten, majestätisch, davonfliegen, atmen, tief, spüren, wie, klaren, frischen, Luft, Lunge, füllen, Naturwunder, feilbieten, perfekt, Rückzugsort, hektisch, Alltag
+
+petit, café, parisien, dégager, odeur, réconfortant, grain, torréfier, croissant, chaud, pluie, d'automne, battre, doucement, vieux, fenêtre, bois, créer, atmosphère, paisible, quelque, client, lire, silencieusement, son, journal, tandis, serveuse, essuyer, tabler, avec, chiffon, propre, coin, sombre, musicien, accorder, soigneusement, guitare, acoustique, soudain, clochette, porte, d'entrée, tinter, joyeusement, annoncer, l'arrivée, d'un, nouveau, visiteur, trempé, jusqu'aux, os, prendre, gorgée, thé, brûlant, observant, tableau, pittoresque, instant, éphémère, capturer, véritablement, l'essence, romantique, ville
+
+가을빛, 완연하다, 산사, 아침, 무척, 평화하다, 오래, 목조건물, 위, 붉다, 물들다, 단풍잎들, 조용히, 떨어지다, 내리다, 이끼, 끼다, 돌계단, 따르다, 올라가다, 맑다, 풍경, 소리, 바람, 타다, 은은하다, 퍼지다, 마당, 가운데, 자리, 커다랗다, 은행나무, 황금빛, 잎사귀들, 눈부시다, 흩뿌리다, 있다, 회색, 승복, 스님, 빗자루, 들다, 낙엽, 느리다, 쓸다, 모으다, 갓, 우려내다, 따뜻하다, 녹차, 향기, 코끝, 스치다, 마음, 차분하다, 가라앉히다, 속세, 번뇌, 잊다, 만들다, 고요하다, 공간, 잠시, 멈추다, 서다, 깊다, 숨, 내쉬다, 자연, 조화, 이루다, 소박하다, 아름답다, 영혼, 위로하다, 주다, 듯
+
+առավոտյան, արեւի, շողերը, լուսավորեցին, լեռնային, հին, գյուղ, քարաշեն, տները, օդում, տարածել, թարմ, թխված, լավաշ, ուրցով, թեյի, անուշ, բույր, բակ, խաղացող, երեխաննոճի, ուրախ, ծիծաղը, միախառնվալ, գետակ, մեղմ, խոխոջալ, տարեց, կին, նստել, ծառերի, ստվերում, զրուցել, անցած, օրերի, մասին, փայտե, հնամաշ, դուռը, ճռռոցով, բացվեց, ներ, մտավ, հոգնած, բայց, ժպտերես, հովիվը, իր, հավատարիմ, շան, հետ, նա, բերել, սարերի, զովությունը, նոր, հավաքած, վայր, ծաղիկներ, խաղաղ, պատկերը, հիշեցնում, հայրենի, բնաշխարհի, անսպառ, գեղեցկություն
+
+غاص, شمس, خلف, كثبان, رملية, ذهبية, تارك, راءها, سماء, ملون, درجات, أحمر, برتقالي, واحة, هادئة, تمايل, شجار, نخيل, عالية, بطء, مع, نسيم, عليل, تجمع, بدو, نار, مخيم, مشتعلة, تبادل, قصص, قديمة, يشربون, قهوة, عربية, معطرة, هيل, عيدا, ظلام, عوى, ذئب, حيد, مما, ضافي, مسة, غموض, إلى, سكون, صحراء, خيام, منسوجة, شعر, قاوم, رودة, ليل, قارسة, فضل, نير, حطب, حياة, بسيطة, عكس, صمود, إنسان, أمام, قسوة, طبيعة
+
+春, 穏やか, 日差し, 古い, 神社, 境内, 温かい, 照らす, 満開, 桜, 木, 薄紅, 色, 花弁, 風, 乗る, 静か, 舞い落ちる, 石畳, 参道, 歩く, 遠く, 心地良い, 鳥, 囀り, 聞こえる, 来る, 手水舎, 冷たい, 水, 触れる, 心, 体, 清める, 賽銭, 箱, 前, 立つ, 目, 閉じる, 両手, 合わせる, 日常, 忙しい, 忘れる, 神聖, 空気, 包む, 此の, 瞬間, 取る, 最も, 大切, 時間, 有る, 未来, 希望, 胸, 抱く, 再び, 活気, 街, 歩き出す

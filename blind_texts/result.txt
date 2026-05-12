@@ -1,0 +1,91 @@
+🇩🇪 German
+
+Rating: 3/5. Issues with part-of-speech tagging (POS-tagging) and case.
+
+  - What went wrong:
+      - Capitalisation of nouns: The system converted many nouns to
+        lower case (winterlandschaft, flocken, erden). In German,
+        nouns are always capitalised.
+      - Plural forms and umlauts: The system failed to revert to the singular
+        . Flocke remained flocken, Spur remained spuren. Worse still, Ästen
+        became ästen (the umlaut was not removed, the plural form was retained).
+      - Homonymy (the most interesting error): The text contained the word Haut (skin).
+        The system returned the lemma hauen (to hit). Why? It lowered the case to
+        haut, decided it was a verb in the 3rd person (er haut – he hits) and returned
+        the infinitive. This means your system lemmatises words in
+        a vacuum, without understanding their role in the sentence.
+      - Verbs with prefixes: einatmen simply became atmen (the prefix
+        was lost). And for some reason, the verb bieten turned into feilbieten
+        (a dictionary hallucination).
+      - Stop words: Prepositions (nach), pronouns (er, sein) remained on the list.
+
+
+🇫🇷 French
+
+Rating: 3.5/5. Issue with tokenising apostrophes.
+
+  - What went wrong:
+      - Clitics: The system cannot split words containing apostrophes.
+        d'automne, d'entrée, l'arrivée, l'essence are treated as a single
+        unit. The French tokeniser must first split l'arrivée into
+        l' and arrivée.
+      - Part-of-speech error: The word tables (tables) has turned into tabler (the verb
+        ‘to rely on’). Again, a lack of context.
+      - Participles: observant has remained a participle rather than reverting to the infinitive
+        observer.
+
+🇰🇷 Korean
+
+Rating: 4/5. A very thorough, though at times somewhat ‘overzealous’, morphological
+analysis.
+
+  - Pros: The system correctly identified the noun 아름다움 (beauty) and linked it to the adjective 아름답다. It also did an excellent job of breaking down the compound verb ‘to sweep up’ (쓸어모으다) into its base forms ‘to sweep’ (쓸다) and ‘to gather’ (모으다).
+  - What went wrong:
+   - Plural forms: The suffix ‘-들’ was not removed (단풍잎들, 잎사귀들).
+      - Irregularities: The word 평화로웠다 was lemmatised as
+        평화하다. Such a word practically does not exist (the correct form is 평화롭다).
+      - Root removal: In the word 노스님 (old monk), the system cut off the prefix 노  and left only 스님.
+
+
+🇦🇲 Armenian
+
+Rating: 1/5. Lack of Armenian morphology.
+
+  - What went wrong: The system simply functioned as a tokeniser based on spaces.
+      - The articles -ը / -ն were not removed (շողերը, տները, դուռը).
+      - Case endings remained in place: օդում (in the air), սարերի (mountains).
+      - Verbs remained in the past tense (լուսավորեցին).
+      - Serious error (Corrupt output): For some reason, the system
+        converted the word երեխաների (children) into the incomprehensible երեխաննոճի. The problem may
+        lie in the encoding or a bug in the internal model.
+
+🇸🇦 Arabic
+
+Rating: 2/5. The problem of ‘over-stemming’. This is a classic
+issue with Arabic NLP. The system knows that Arabic has many prefixes (و, ب, ل, ف),
+and starts mindlessly cutting off the first letters, even if they are part of the root!
+
+  - Critical errors (destruction of the root):
+      - وراءها (behind her) -> راءها (the letter و ‘waw’ has been cut off; the system thought
+        it was the conjunction ‘and’).
+      - أشجار (trees) -> شجار (the letter أ ‘alif’ has been cut off).
+      - بعيدا (far) -> عيدا (the letter ب ‘ba’ has been cut off; the system thought it was
+        the preposition ‘in’).
+  - Plural forms: Broken plurals are not processed (قصص did not
+    become قصة, خيام did not become خيمة).
+
+🇯🇵 Japanese
+
+Rating: 4.5/5. Excellent performance under the bonnet, but there are some spelling quirks. The Japanese
+engine performed impressively, but it has a very aggressive vocabulary (it likely
+uses a normalisation method such as Sudachi).
+
+  - Pros: Excellent tokenisation without spaces. The verb 聞こえてきた is perfectly split into
+    the lemmas 聞こえる and 来る.
+  - Spelling peculiarities (Kana to Kanji):
+      - The text contained 暖かく; the system returned a synonym with a different kanji — 温かい.
+      - The text contained the hiragana 花びら; the system converted it to the kanji 花弁.
+      - In the text さえずり, the system found the compound kanji 囀り. This is not an error, but
+        deep lexical normalisation.
+  - Grammar error: The construction 私にとって (for me) contains the particle にとって.
+    The system recognised とって and lemmatised it as the verb 取る (to take).

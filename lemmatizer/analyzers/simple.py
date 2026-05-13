@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import unicodedata
 
 import simplemma
 
@@ -46,6 +47,10 @@ def _base_candidates(surface: str, lower: str, language: str, text: str, start: 
         return candidates
     if language == "fr":
         return _french_surface_candidates(lower)
+    if language == "es":
+        return _spanish_surface_candidates(lower)
+    if language == "it":
+        return _italian_surface_candidates(lower)
     if language == "hy":
         normalized = lower.replace("եւ", "և")
         return [normalized, simplemma.lemmatize(normalized, lang=language), lower]
@@ -198,6 +203,53 @@ def _french_surface_candidates(token: str) -> list[str]:
     if part != token:
         candidates.append(token)
     return candidates
+
+
+def _spanish_surface_candidates(token: str) -> list[str]:
+    candidates = []
+    lemma = simplemma.lemmatize(token, lang="es")
+    deaccented_lemma = _strip_diacritics(lemma)
+    if deaccented_lemma != lemma:
+        candidates.append(deaccented_lemma)
+    candidates.append(lemma)
+    if token.endswith("s") and len(token) > 3:
+        candidates.append(token[:-1])
+    if token != _strip_diacritics(token):
+        candidates.append(_strip_diacritics(token))
+    candidates.append(token)
+    return candidates
+
+
+def _italian_surface_candidates(token: str) -> list[str]:
+    part = _italian_content_part(token)
+    candidates = []
+    if part != token:
+        candidates.append(part)
+        candidates.append(simplemma.lemmatize(part, lang="it"))
+    lemma = simplemma.lemmatize(part, lang="it")
+    if lemma.endswith("are") and part.endswith("o"):
+        candidates.append(part)
+    candidates.append(lemma)
+    if part.endswith("i") and len(part) > 3:
+        candidates.append(part[:-1] + "o")
+    if part.endswith("e") and len(part) > 3:
+        candidates.append(part[:-1] + "o")
+    if part != token:
+        candidates.append(token)
+    return candidates
+
+
+def _italian_content_part(token: str) -> str:
+    if "'" not in token:
+        return token
+    prefix, tail = token.split("'", 1)
+    if prefix in {"all", "dall", "dell", "l", "nell", "un"} and tail:
+        return tail
+    return token
+
+
+def _strip_diacritics(value: str) -> str:
+    return "".join(ch for ch in unicodedata.normalize("NFD", value) if not unicodedata.combining(ch))
 
 
 def _should_keep(lemma: str, language: str) -> bool:

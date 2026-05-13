@@ -17,11 +17,15 @@ EXPANDED = ROOT / "expanded_texts"
 BLIND = ROOT / "blind_texts"
 EXT1 = ROOT / "ext1"
 EXT2 = ROOT / "ext2"
+EXT3_NEW_LANGS = ROOT / "ext3_new_langs"
 
 
 def test_language_metadata_is_loaded_from_resource_files() -> None:
     assert PREFIX_TO_LANGUAGE["ko"] == "kr"
     assert PREFIX_TO_LANGUAGE["ja"] == "jp"
+    assert PREFIX_TO_LANGUAGE["es"] == "es"
+    assert PREFIX_TO_LANGUAGE["fi"] == "fi"
+    assert PREFIX_TO_LANGUAGE["it"] == "it"
     assert "nach" in STOPWORDS["de"]
     assert "avec" in STOPWORDS["fr"]
 
@@ -78,6 +82,18 @@ def test_nested_ext2_texts_are_discovered_with_language_subfolders() -> None:
     assert files[-1].language == "kr"
 
 
+def test_nested_ext3_new_language_texts_are_discovered_with_language_subfolders() -> None:
+    files = discover_text_files(EXT3_NEW_LANGS)
+
+    assert len(files) == 30
+    assert files[0].prefix == "es_10"
+    assert files[0].language == "es"
+    assert files[0].entities_path == EXT3_NEW_LANGS / "es" / "10_entities.txt"
+    assert {item.language for item in files} == {"es", "fi", "it"}
+    assert files[-1].prefix == "it_9"
+    assert files[-1].language == "it"
+
+
 def test_language_specific_dictionary_forms() -> None:
     german = lemmatize_text("Draußen fiel der kalte Regen.", "de").unique_lemmas
     japanese = lemmatize_text("雪が白く積もっていました。", "jp").unique_lemmas
@@ -94,6 +110,22 @@ def test_language_specific_dictionary_forms() -> None:
     assert korean_alias == korean
     assert "زيارة" in arabic
     assert "سوق" in arabic
+
+
+def test_new_language_dictionary_forms() -> None:
+    italian = lemmatize_text("La panadera apri le botteghe e sistemava pani caldi.", "it").unique_lemmas
+    finnish = lemmatize_text("Lämpimät sämpylät nostettiin tiskille.", "fi").unique_lemmas
+    spanish = lemmatize_text("Los vecinos comentaron noticias locales.", "es").unique_lemmas
+
+    assert "aprire" in italian
+    assert "bottega" in italian
+    assert "caldo" in italian
+    assert "lämmin" in finnish
+    assert "sämpylä" in finnish
+    assert "tiski" in finnish
+    assert "vecino" in spanish
+    assert "comentar" in spanish
+    assert "local" in spanish
 
 
 def test_arabic_unvocalized_prefix_letters_are_not_overstripped() -> None:
@@ -140,6 +172,28 @@ def test_ext2_hybrid_partition_exceeds_target_quality_without_reference_vocabula
     predicted = 0
     expected = 0
     for text_file in discover_text_files(EXT2):
+        report = lemmatize_pair(
+            text_file.text_path,
+            text_file.entities_path,
+            backend="hybrid",
+            language=text_file.language,
+        )
+        matched += int(report.metrics["matched"])
+        predicted += int(report.metrics["predicted"])
+        expected += int(report.metrics["expected"])
+
+    precision = matched / predicted
+    recall = matched / expected
+    f1 = 2 * precision * recall / (precision + recall)
+
+    assert f1 > 0.80
+
+
+def test_ext3_new_languages_partition_exceeds_target_quality_without_reference_vocabulary() -> None:
+    matched = 0
+    predicted = 0
+    expected = 0
+    for text_file in discover_text_files(EXT3_NEW_LANGS):
         report = lemmatize_pair(
             text_file.text_path,
             text_file.entities_path,

@@ -5,7 +5,10 @@ This project builds lemma lists from the paired `*_text.txt` files. The file pre
 - `am` -> Armenian (`hy`)
 - `ar` -> Arabic
 - `de` -> German
+- `es` -> Spanish
+- `fi` -> Finnish
 - `fr` -> French
+- `it` -> Italian
 - `jp` -> Japanese
 - `kr` -> Korean
 
@@ -44,10 +47,11 @@ Run the experimental Stanza backend:
 .\.venv\Scripts\python.exe scripts\lemmatize.py --all --root blind_texts --backend stanza --write-dir output_stanza_blind
 ```
 
-Run nested datasets such as `ext1`:
+Run nested datasets such as `ext1` or `ext3_new_langs`:
 
 ```powershell
 .\.venv\Scripts\python.exe scripts\lemmatize.py --all --root ext1 --backend hybrid --write-dir output_ext1_hybrid
+.\.venv\Scripts\python.exe scripts\lemmatize.py --all --root ext3_new_langs --backend hybrid --write-dir output_ext3_hybrid
 ```
 
 Single-file examples:

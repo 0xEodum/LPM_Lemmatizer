@@ -16,7 +16,7 @@ def main() -> int:
     _configure_stdio()
     parser = argparse.ArgumentParser(description="Return lemmas for a text snippet.")
     parser.add_argument("text", nargs="*", help="Text to lemmatize. If omitted, interactive mode starts.")
-    parser.add_argument("--language", "-l", help="Language code: de, fr, ar, hy/am, jp/ja, kr/ko.")
+    parser.add_argument("--language", "-l", help="Language code: de, es, fi, fr, ar, hy/am, it, jp/ja, kr/ko.")
     parser.add_argument("--json", action="store_true", help="Print the full JSON report.")
     args = parser.parse_args()
 
@@ -32,7 +32,7 @@ def main() -> int:
 def _interactive(language: str | None, as_json: bool) -> int:
     current_language = language
     if not current_language:
-        current_language = input("Language (de/fr/ar/hy/jp/kr): ").strip()
+        current_language = input("Language (de/es/fi/fr/ar/hy/it/jp/kr): ").strip()
     if not current_language:
         print("No language provided.")
         return 1

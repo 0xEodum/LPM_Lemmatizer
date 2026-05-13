@@ -52,3 +52,24 @@ hy f1=0.859
 jp f1=0.842
 kr f1=0.921
 ```
+
+Aggregate `ext3_new_langs` results after adding `es`, `fi`, and `it` support:
+
+```text
+current: p=0.861 r=0.876 f1=0.868
+hybrid:  p=0.861 r=0.876 f1=0.868
+```
+
+Hybrid policy for `ext3_new_langs`:
+```text
+es -> current/simplemma
+fi -> current/simplemma
+it -> current/simplemma
+```
+
+Per-language `ext3_new_langs` aggregate:
+```text
+es f1=0.823
+fi f1=0.897
+it f1=0.884
+```

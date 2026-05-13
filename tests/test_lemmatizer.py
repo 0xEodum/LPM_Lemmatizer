@@ -16,6 +16,7 @@ FIRST_PASS = ROOT / "first_pass"
 EXPANDED = ROOT / "expanded_texts"
 BLIND = ROOT / "blind_texts"
 EXT1 = ROOT / "ext1"
+EXT2 = ROOT / "ext2"
 
 
 def test_language_metadata_is_loaded_from_resource_files() -> None:
@@ -31,6 +32,14 @@ def test_parse_lemma_list_reads_comma_separated_utf8() -> None:
     assert "따뜻하다" in lemmas
     assert "봄바람" in lemmas
     assert "느끼다" in lemmas
+
+
+def test_parse_lemma_list_reads_line_separated_ext2_headwords() -> None:
+    arabic = parse_lemma_list(EXT2 / "ar" / "1_entities.txt")
+    japanese = parse_lemma_list(EXT2 / "jp" / "1_entities.txt")
+
+    assert arabic[:3] == ("استيقظ", "حي", "قديم")
+    assert japanese[:3] == ("春", "朝", "京都")
 
 
 def test_discover_text_files_ignores_entity_files() -> None:
@@ -58,6 +67,17 @@ def test_nested_ext1_texts_are_discovered_with_language_subfolders() -> None:
     assert files[-1].language == "kr"
 
 
+def test_nested_ext2_texts_are_discovered_with_language_subfolders() -> None:
+    files = discover_text_files(EXT2)
+
+    assert len(files) == 36
+    assert files[0].prefix == "ar_1"
+    assert files[0].language == "ar"
+    assert files[0].entities_path == EXT2 / "ar" / "1_entities.txt"
+    assert files[-1].prefix == "kr_6"
+    assert files[-1].language == "kr"
+
+
 def test_language_specific_dictionary_forms() -> None:
     german = lemmatize_text("Draußen fiel der kalte Regen.", "de").unique_lemmas
     japanese = lemmatize_text("雪が白く積もっていました。", "jp").unique_lemmas
@@ -74,6 +94,17 @@ def test_language_specific_dictionary_forms() -> None:
     assert korean_alias == korean
     assert "زيارة" in arabic
     assert "سوق" in arabic
+
+
+def test_arabic_unvocalized_prefix_letters_are_not_overstripped() -> None:
+    lemmas = lemmatize_text("بدأت بائع وتركت.", "ar").unique_lemmas
+
+    assert "بدأ" in lemmas
+    assert "بائع" in lemmas
+    assert "ترك" in lemmas
+    assert "دأت" not in lemmas
+    assert "ائع" not in lemmas
+    assert "تركت" not in lemmas
 
 
 def test_sample_pairs_reach_useful_gold_recall_with_reference_vocabulary() -> None:
@@ -102,6 +133,28 @@ def test_expanded_pairs_reach_useful_gold_recall_with_reference_vocabulary() -> 
     assert recalls["kr"] >= 0.90
     assert recalls["ar"] >= 0.90
     assert recalls["hy"] >= 0.90
+
+
+def test_ext2_hybrid_partition_exceeds_target_quality_without_reference_vocabulary() -> None:
+    matched = 0
+    predicted = 0
+    expected = 0
+    for text_file in discover_text_files(EXT2):
+        report = lemmatize_pair(
+            text_file.text_path,
+            text_file.entities_path,
+            backend="hybrid",
+            language=text_file.language,
+        )
+        matched += int(report.metrics["matched"])
+        predicted += int(report.metrics["predicted"])
+        expected += int(report.metrics["expected"])
+
+    precision = matched / predicted
+    recall = matched / expected
+    f1 = 2 * precision * recall / (precision + recall)
+
+    assert f1 > 0.80
 
 
 def test_text_cli_accepts_positional_text() -> None:

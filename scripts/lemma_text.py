@@ -13,6 +13,7 @@ from lemmatizer.core import lemmatize_text
 
 
 def main() -> int:
+    _configure_stdio()
     parser = argparse.ArgumentParser(description="Return lemmas for a text snippet.")
     parser.add_argument("text", nargs="*", help="Text to lemmatize. If omitted, interactive mode starts.")
     parser.add_argument("--language", "-l", help="Language code: de, fr, ar, hy/am, jp/ja, kr/ko.")
@@ -56,6 +57,12 @@ def _print_lemmas(text: str, language: str, as_json: bool) -> None:
         print(report.to_json())
         return
     print(", ".join(report.unique_lemmas))
+
+
+def _configure_stdio() -> None:
+    for stream in (sys.stdin, sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
 
 
 if __name__ == "__main__":

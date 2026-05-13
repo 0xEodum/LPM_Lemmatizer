@@ -16,11 +16,11 @@ def lemmatize_arabic(text: str, snapper: ReferenceSnapper) -> list[LemmaToken]:
         if PUNCT_OR_NUMBER_RE.match(surface):
             continue
         surface_candidates = _arabic_candidates(surface)
-        has_stripped_form = surface_candidates and surface_candidates[0] != araby.strip_diacritics(surface)
-        if has_stripped_form:
-            candidates = [*surface_candidates, lemmatizer.lemmatize(surface)]
+        qalsadi_lemma = lemmatizer.lemmatize(surface)
+        if _should_prefer_qalsadi(surface, surface_candidates):
+            candidates = [qalsadi_lemma, *surface_candidates]
         else:
-            candidates = [lemmatizer.lemmatize(surface), *surface_candidates]
+            candidates = [*surface_candidates, qalsadi_lemma]
         lemma = snapper.snap(surface, candidates)
         lemma = LEMMA_OVERRIDES.get("ar", {}).get(lemma, LEMMA_OVERRIDES.get("ar", {}).get(surface, lemma))
         if _should_keep(lemma):
@@ -39,6 +39,12 @@ def _arabic_candidates(surface: str) -> list[str]:
     more = []
     for variant in variants:
         more.append(variant)
+        if variant.endswith("ته") and len(variant) > 3:
+            more.append(variant[:-2] + "ة")
+        if variant.endswith("ه") and len(variant) > 3:
+            more.append(variant[:-1])
+        if variant.endswith("وا") and len(variant) > 3:
+            more.append(variant[:-2])
         if variant.endswith("ية"):
             more.append(variant[:-2] + "ي")
         if variant.endswith("ة"):
@@ -56,6 +62,20 @@ def _arabic_candidates(surface: str) -> list[str]:
         if "سرار" in variant:
             more.append("سر")
     return more
+
+
+def _should_prefer_qalsadi(surface: str, surface_candidates: list[str]) -> bool:
+    if not surface_candidates:
+        return True
+    normalized = araby.strip_diacritics(surface).replace("ـ", "")
+    first_candidate = surface_candidates[0]
+    if first_candidate == normalized:
+        return True
+    if normalized.startswith("ب") and first_candidate[:1] in {"ا", "أ", "إ", "آ", "د", "ع", "ي"}:
+        return True
+    if normalized.startswith("و") and (first_candidate.endswith("ت") or first_candidate.endswith("وا")):
+        return True
+    return False
 
 
 def _should_keep(lemma: str) -> bool:

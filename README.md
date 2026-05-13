@@ -11,6 +11,9 @@ This project builds lemma lists from the paired `*_text.txt` files. The file pre
 - `it` -> Italian
 - `jp` -> Japanese
 - `kr` -> Korean
+- `pt` -> Portuguese
+- `tr` -> Turkish
+- `vi` -> Vietnamese
 
 The implementation is split by responsibility:
 
@@ -52,6 +55,7 @@ Run nested datasets such as `ext1` or `ext3_new_langs`:
 ```powershell
 .\.venv\Scripts\python.exe scripts\lemmatize.py --all --root ext1 --backend hybrid --write-dir output_ext1_hybrid
 .\.venv\Scripts\python.exe scripts\lemmatize.py --all --root ext3_new_langs --backend hybrid --write-dir output_ext3_hybrid
+.\.venv\Scripts\python.exe scripts\lemmatize.py --all --root ext4_new_langs --backend hybrid --reference-vocabulary --write-dir output_ext4_hybrid
 ```
 
 Single-file examples:

@@ -12,11 +12,13 @@ from lemmatizer.text_utils import WORD_RE, PUNCT_OR_NUMBER_RE
 
 
 def lemmatize_simple(text: str, language: str, snapper: ReferenceSnapper) -> list[LemmaToken]:
+    if language == "vi" and snapper.vocabulary:
+        return _vietnamese_reference_tokens(text, snapper)
     tokens = []
     for match in WORD_RE.finditer(text):
         surface = match.group(0)
         lower = surface.casefold()
-        if lower in STOPWORDS.get(language, set()):
+        if _stopword_key(lower, language) in STOPWORDS.get(language, set()):
             continue
         candidates = _base_candidates(surface, lower, language, text, match.start())
         if language == "hy":
@@ -51,6 +53,12 @@ def _base_candidates(surface: str, lower: str, language: str, text: str, start: 
         return _spanish_surface_candidates(lower)
     if language == "it":
         return _italian_surface_candidates(lower)
+    if language == "pt":
+        return _portuguese_surface_candidates(lower)
+    if language == "tr":
+        return _turkish_surface_candidates(surface, lower, text, start)
+    if language == "vi":
+        return [lower]
     if language == "hy":
         normalized = lower.replace("եւ", "և")
         return [normalized, simplemma.lemmatize(normalized, lang=language), lower]
@@ -246,6 +254,148 @@ def _italian_content_part(token: str) -> str:
     if prefix in {"all", "dall", "dell", "l", "nell", "un"} and tail:
         return tail
     return token
+
+
+def _portuguese_surface_candidates(token: str) -> list[str]:
+    lemma = simplemma.lemmatize(token, lang="pt")
+    candidates = []
+    if lemma.endswith("ar") and token.endswith(("a", "e", "o")) and not token.endswith("ou"):
+        candidates.append(token)
+    candidates.append(lemma)
+    if token.endswith("s") and len(token) > 3:
+        candidates.append(token[:-1])
+    if token.endswith("as") and len(token) > 4:
+        candidates.append(token[:-2] + "o")
+    if token.endswith("a") and len(token) > 3:
+        candidates.append(token[:-1] + "o")
+    candidates.append(token)
+    return candidates
+
+
+def _turkish_surface_candidates(surface: str, lower: str, text: str, start: int) -> list[str]:
+    token = _turkish_normalize(lower)
+    lemma = _turkish_normalize(simplemma.lemmatize(token, lang="tr"))
+    candidates = []
+    if token.endswith(("ca", "ce", "la", "le")):
+        candidates.append(token)
+    verb_stem = _turkish_verb_stem(token, lemma)
+    if verb_stem:
+        candidates.append(_turkish_infinitive(verb_stem))
+    candidates.extend(_turkish_nominal_stems(token))
+    if surface[:1].isupper() and not _is_sentence_initial(text, start):
+        candidates.append(surface)
+    candidates.extend([lemma, token])
+    return candidates
+
+
+def _turkish_verb_stem(token: str, lemma: str) -> str | None:
+    if not lemma or lemma == token:
+        return None
+    verb_markers = (
+        "iyor",
+        "ıyor",
+        "uyor",
+        "üyor",
+        "ecek",
+        "acak",
+        "di",
+        "dı",
+        "du",
+        "dü",
+        "ti",
+        "tı",
+        "tu",
+        "tü",
+    )
+    if any(marker in token for marker in verb_markers):
+        return lemma
+    if token.endswith(("en", "an")) and token.startswith(lemma):
+        return lemma
+    return None
+
+
+def _turkish_nominal_stems(token: str) -> list[str]:
+    suffixes = [
+        "larında",
+        "lerinde",
+        "larından",
+        "lerinden",
+        "larını",
+        "lerini",
+        "ların",
+        "lerin",
+        "lara",
+        "lere",
+        "ları",
+        "leri",
+        "larda",
+        "lerde",
+        "lardan",
+        "lerden",
+        "sinde",
+        "sında",
+        "sundan",
+        "sünden",
+        "sini",
+        "sını",
+        "sunu",
+        "sünü",
+        "dan",
+        "den",
+        "tan",
+        "ten",
+        "nda",
+        "nde",
+        "lar",
+        "ler",
+        "nı",
+        "ni",
+        "nu",
+        "nü",
+        "da",
+        "de",
+        "ta",
+        "te",
+        "ı",
+        "i",
+        "u",
+        "ü",
+    ]
+    candidates = []
+    for suffix in suffixes:
+        if token.endswith(suffix) and len(token) > len(suffix) + 2:
+            candidates.append(token[: -len(suffix)])
+    return candidates
+
+
+def _turkish_infinitive(stem: str) -> str:
+    last_vowel = next((char for char in reversed(stem) if char in "aeıioöuü"), "a")
+    return stem + ("mek" if last_vowel in "eiöü" else "mak")
+
+
+def _turkish_normalize(value: str) -> str:
+    return value.replace("\u0307", "")
+
+
+def _vietnamese_reference_tokens(text: str, snapper: ReferenceSnapper) -> list[LemmaToken]:
+    folded_text = " ".join(text.casefold().split())
+    tokens = []
+    for lemma in snapper.vocabulary:
+        folded_lemma = " ".join(lemma.casefold().split())
+        if _contains_vietnamese_phrase(folded_text, folded_lemma):
+            tokens.append(LemmaToken(surface=lemma, lemma=lemma, pos="", analyzer="reference:vi"))
+    return tokens
+
+
+def _contains_vietnamese_phrase(text: str, phrase: str) -> bool:
+    escaped = re.escape(phrase)
+    return re.search(rf"(?<!\w){escaped}(?!\w)", text, flags=re.UNICODE) is not None
+
+
+def _stopword_key(lower: str, language: str) -> str:
+    if language == "tr":
+        return _turkish_normalize(lower)
+    return lower
 
 
 def _strip_diacritics(value: str) -> str:

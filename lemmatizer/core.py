@@ -62,7 +62,7 @@ def lemmatize_text(
 ) -> LemmaReport:
     language = PREFIX_TO_LANGUAGE.get(language, language)
     snapper = ReferenceSnapper(language, reference_lemmas)
-    if language in {"de", "es", "fi", "fr", "hy", "it"}:
+    if language in {"de", "es", "fi", "fr", "hy", "it", "pt", "tr", "vi"}:
         tokens = tuple(lemmatize_simple(text, language, snapper))
     elif language == "ar":
         tokens = tuple(lemmatize_arabic(text, snapper))

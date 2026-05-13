@@ -14,7 +14,7 @@ from lemmatizer.core import discover_text_files, lemmatize_pair, lemmatize_text,
 def main() -> int:
     parser = argparse.ArgumentParser(description="Multilingual lemmatization CLI")
     parser.add_argument("--input", type=Path, help="Path to one *_text.txt file or any raw text file.")
-    parser.add_argument("--language", help="Language code: de, es, fi, fr, ar, am/hy, it, jp/ja, kr/ko.")
+    parser.add_argument("--language", help="Language code: de, es, fi, fr, ar, am/hy, it, jp/ja, kr/ko, pt, tr, vi.")
     parser.add_argument("--expected", type=Path, help="Optional comma-separated *_entities.txt lemma list.")
     parser.add_argument("--all", action="store_true", help="Process every *_text.txt file in --root.")
     parser.add_argument("--root", type=Path, default=ROOT, help="Directory used with --all.")

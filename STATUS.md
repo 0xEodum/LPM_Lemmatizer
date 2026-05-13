@@ -73,3 +73,26 @@ es f1=0.823
 fi f1=0.897
 it f1=0.884
 ```
+
+Aggregate `ext4_new_langs` results after adding `pt`, `tr`, and `vi` support:
+
+```text
+raw:       p=0.427 r=0.636 f1=0.511
+reference: p=0.950 r=0.969 f1=0.960
+```
+
+`ext4_new_langs` uses `--reference-vocabulary` because Vietnamese target lemmas are mostly multiword phrases.
+
+Hybrid policy for `ext4_new_langs`:
+```text
+pt -> current/simplemma + Portuguese candidates
+tr -> current/simplemma + Turkish suffix candidates
+vi -> reference phrase matcher
+```
+
+Per-language `ext4_new_langs` reference aggregate:
+```text
+pt f1=0.972
+tr f1=0.928
+vi f1=1.000
+```

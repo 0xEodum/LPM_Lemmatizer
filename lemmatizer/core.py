@@ -90,7 +90,23 @@ def lemmatize_text_hybrid(
     language = PREFIX_TO_LANGUAGE.get(language, language)
     if language in {"de", "fr", "hy"}:
         return lemmatize_text_stanza(text, language)
+    if language == "pt" and not reference_lemmas:
+        current = lemmatize_text(text, language, reference_lemmas=reference_lemmas)
+        try:
+            stanza_report = lemmatize_text_stanza(text, language)
+        except Exception:
+            return current
+        return _combine_reports(current, stanza_report)
     return lemmatize_text(text, language, reference_lemmas=reference_lemmas)
+
+
+def _combine_reports(primary: LemmaReport, secondary: LemmaReport) -> LemmaReport:
+    tokens = (*primary.tokens, *secondary.tokens)
+    return LemmaReport(
+        language=primary.language,
+        tokens=tokens,
+        unique_lemmas=unique(token.lemma for token in tokens),
+    )
 
 
 __all__ = [

@@ -77,8 +77,8 @@ it f1=0.884
 Aggregate `ext4_new_langs` results after adding `pt`, `tr`, and `vi` support:
 
 ```text
-raw:       p=0.427 r=0.636 f1=0.511
-reference: p=0.950 r=0.969 f1=0.960
+raw:       p=0.699 r=0.696 f1=0.698
+reference: p=0.948 r=0.972 f1=0.960
 ```
 
 `ext4_new_langs` uses `--reference-vocabulary` because Vietnamese target lemmas are mostly multiword phrases.
@@ -93,6 +93,14 @@ vi -> reference phrase matcher
 Per-language `ext4_new_langs` reference aggregate:
 ```text
 pt f1=0.972
-tr f1=0.928
-vi f1=1.000
+tr f1=0.929
+vi f1=0.999
+```
+
+Random-text `ext4_new_langs/test.txt` follow-up:
+
+```text
+pt -> Stanza-enabled hybrid catches imperfect verbs such as processava -> processar and keeps noun exceptions such as descoberta.
+tr -> suffix repair now preserves forms such as yeni/köprü/dikkatli and repairs zemini -> zemin, belediyeden -> belediye, güvenliği -> güvenlik.
+vi -> no-reference mode now uses longest-match phrase segmentation for common multi-syllable lexemes such as người giáo viên, lớp học, lịch sử, ghi chú.
 ```

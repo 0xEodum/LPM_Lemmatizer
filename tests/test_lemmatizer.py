@@ -165,6 +165,62 @@ def test_ext4_new_language_dictionary_forms() -> None:
     assert "phố cổ" in vietnamese
 
 
+def test_ext4_random_text_error_analysis_regressions() -> None:
+    turkish = lemmatize_text(
+        "Sabah erkenden uyanan mühendis yeni köprü projesi için çizimleri gözden geçirdi. "
+        "Şantiyeye vardığında yağmurdan sonra zemini güçlendirmek için makineleri dikkatli kullandı. "
+        "Belediyeden gelen ekip güvenliği artıracak değişiklik üzerinde anlaştı.",
+        "tr",
+    ).unique_lemmas
+    portuguese = lemmatize_text(
+        "A pesquisadora processava os resultados. A equipe discutiu possíveis explicações. "
+        "A descoberta precisava de confirmação e indicava uma direção promissora.",
+        "pt",
+    ).unique_lemmas
+    vietnamese = lemmatize_text(
+        "Buổi sáng, người giáo viên bước vào lớp học. Học sinh sắp xếp bàn ghế "
+        "cho buổi thảo luận về lịch sử địa phương.",
+        "vi",
+    ).unique_lemmas
+
+    assert "yeni" in turkish
+    assert "köprü" in turkish
+    assert "proje" in turkish
+    assert "gözden geçirmek" in turkish
+    assert "şantiye" in turkish
+    assert "yağmur" in turkish
+    assert "zemin" in turkish
+    assert "dikkatli" in turkish
+    assert "belediye" in turkish
+    assert "güvenlik" in turkish
+    assert "yen" not in turkish
+    assert "köpr" not in turkish
+    assert "dikkatmak" not in turkish
+    assert "belediyemek" not in turkish
+
+    assert "processar" in portuguese
+    assert "precisar" in portuguese
+    assert "indicar" in portuguese
+    assert "possível" in portuguese
+    assert "explicação" in portuguese
+    assert "promissor" in portuguese
+    assert "descoberta" in portuguese
+    assert "processava" not in portuguese
+    assert "precisava" not in portuguese
+    assert "promissoro" not in portuguese
+
+    assert "buổi sáng" in vietnamese
+    assert "người giáo viên" in vietnamese
+    assert "lớp học" in vietnamese
+    assert "học sinh" in vietnamese
+    assert "bàn ghế" in vietnamese
+    assert "buổi thảo luận" in vietnamese
+    assert "lịch sử" in vietnamese
+    assert "địa phương" in vietnamese
+    assert "giáo" not in vietnamese
+    assert "viên" not in vietnamese
+
+
 def test_arabic_unvocalized_prefix_letters_are_not_overstripped() -> None:
     lemmas = lemmatize_text("بدأت بائع وتركت.", "ar").unique_lemmas
 

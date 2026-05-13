@@ -16,6 +16,9 @@ STANZA_LANGUAGE = {
     "hy": "hy",
     "jp": "ja",
     "kr": "ko",
+    "pt": "pt",
+    "tr": "tr",
+    "vi": "vi",
 }
 
 PROCESSORS = {
@@ -25,6 +28,9 @@ PROCESSORS = {
     "hy": "tokenize,mwt,pos,lemma",
     "ja": "tokenize,pos,lemma",
     "ko": "tokenize,pos,lemma",
+    "pt": "tokenize,mwt,pos,lemma",
+    "tr": "tokenize,pos,lemma",
+    "vi": "tokenize,pos,lemma",
 }
 
 CONTENT_UPOS = {"ADJ", "ADV", "NOUN", "PROPN", "VERB"}

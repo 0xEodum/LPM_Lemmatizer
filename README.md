@@ -1,85 +1,68 @@
-# Multilingual Lemmatizer
+# Universal Lemmatizer
 
-This project builds lemma lists from the paired `*_text.txt` files. The file prefix selects the analyzer:
+Library-backed multilingual lemmatizer for the languages in `langs.txt`.
 
-- `am` -> Armenian (`hy`)
-- `ar` -> Arabic
-- `de` -> German
-- `es` -> Spanish
-- `fi` -> Finnish
-- `fr` -> French
-- `it` -> Italian
-- `jp` -> Japanese
-- `kr` -> Korean
-- `pt` -> Portuguese
-- `tr` -> Turkish
-- `vi` -> Vietnamese
+## Backends
 
-The implementation is split by responsibility:
+| Languages | Backend |
+| --- | --- |
+| Armenian, Bulgarian, Croatian, Czech, Danish, English, Estonian, Finnish, French, German, Indonesian, Italian, Latvian, Norwegian, Portuguese, Russian, Slovak, Spanish, Swedish, Turkish, Ukrainian | `simplemma` |
+| Japanese | `fugashi` + `unidic-lite` |
+| Korean | `kiwipiepy` |
+| Chinese | `jieba` segmentation, surface form as lemma |
+| Belarusian, Hebrew | Stanza `tokenize,pos,lemma` |
 
-- `lemmatizer/core.py` orchestrates language dispatch and scoring.
-- `lemmatizer/analyzers/` contains language-specific analyzers.
-- `lemmatizer/reference.py` handles optional canonical-vocabulary snapping.
-- `lemmatizer/io.py` handles text/entity file discovery and parsing.
-- `lemmatizer/models.py` contains shared result dataclasses.
-- `lemmatizer/resources/*.json` contains language aliases, stopwords, and irregular forms.
+The public entrypoint is `lemmatizer.UniversalLemmatizer`.
 
-Install dependencies in the existing environment:
+## Setup
+
+Use the existing project environment:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pip install pytest pytest-cov
 ```
 
-Process the expanded dataset and write lemma lists:
+Download the Stanza models used for the two gap languages:
 
 ```powershell
-.\.venv\Scripts\python.exe scripts\lemmatize.py --all --root expanded_texts --reference-vocabulary --write-dir output_expanded
+.\.venv\Scripts\python.exe -c "import stanza; [stanza.download(lang, processors='tokenize,pos,lemma') for lang in ('be', 'he')]"
 ```
 
-The `--reference-vocabulary` flag uses the matching `*_entities.txt` file as a canonical lemma vocabulary. Without that flag, the system runs as a raw lemmatizer for new text and only uses the entity files for scoring.
+## Usage
 
-Run the blind texts without target entity files:
+Single file:
 
 ```powershell
-.\.venv\Scripts\python.exe scripts\lemmatize.py --all --root blind_texts --write-dir output_blind
+.\.venv\Scripts\python.exe scripts\lemmatize.py --language en --input val\en.txt --json
 ```
 
-Run the experimental Stanza backend:
+All validation files:
 
 ```powershell
-.\.venv\Scripts\python.exe scripts\lemmatize.py --all --root blind_texts --backend stanza --write-dir output_stanza_blind
+.\.venv\Scripts\python.exe scripts\lemmatize.py --all --root val --json
 ```
 
-Run nested datasets such as `ext1` or `ext3_new_langs`:
+Direct API:
+
+```python
+from lemmatizer import UniversalLemmatizer
+
+result = UniversalLemmatizer().lemmatize("The autumn leaves swirled.", "English")
+print(result.unique_lemmas)
+```
+
+## Verification
 
 ```powershell
-.\.venv\Scripts\python.exe scripts\lemmatize.py --all --root ext1 --backend hybrid --write-dir output_ext1_hybrid
-.\.venv\Scripts\python.exe scripts\lemmatize.py --all --root ext3_new_langs --backend hybrid --write-dir output_ext3_hybrid
-.\.venv\Scripts\python.exe scripts\lemmatize.py --all --root ext4_new_langs --backend hybrid --reference-vocabulary --write-dir output_ext4_hybrid
+.\.venv\Scripts\python.exe -m pytest tests\test_universal_lemmatizer.py --cov=lemmatizer --cov=scripts --cov-report=term-missing -q
 ```
 
-Single-file examples:
+Current CPU validation on `val/*.txt`:
 
-```powershell
-.\.venv\Scripts\python.exe scripts\lemmatize.py --input expanded_texts\de_text.txt --language de
-.\.venv\Scripts\python.exe scripts\lemmatize.py --input expanded_texts\ar_text.txt --language ar --expected expanded_texts\ar_entities.txt --reference-vocabulary --json
-```
+- files processed: 25
+- fresh single-process average: about `0.74s` per text
+- warmed average: about `0.011s` per text
+- warmed max: about `0.18s`
 
-Lemmatize text directly:
-
-```powershell
-.\.venv\Scripts\python.exe scripts\lemma_text.py --language de "Draußen fiel der kalte Regen."
-.\.venv\Scripts\python.exe scripts\lemma_text.py --language kr "따뜻한 봄바람이 불었습니다."
-```
-
-If no text argument is passed, `lemma_text.py` starts interactive mode and asks for the language and text:
-
-```powershell
-.\.venv\Scripts\python.exe scripts\lemma_text.py
-```
-
-Run tests:
-
-```powershell
-.\.venv\Scripts\python.exe -m pytest -q
-```
+`langs.txt` includes Russian, and the implementation supports it, but the current `val/` directory does not include `ru.txt`.

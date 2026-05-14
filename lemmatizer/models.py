@@ -1,42 +1,48 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
-import json
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class LemmaToken:
     surface: str
     lemma: str
-    pos: str
-    analyzer: str
+    language: str
+    backend: str
+    pos: str = ""
 
 
-@dataclass(frozen=True)
-class LemmaReport:
+@dataclass(frozen=True, slots=True)
+class LemmaResult:
     language: str
     tokens: tuple[LemmaToken, ...]
-    unique_lemmas: tuple[str, ...]
-    expected_lemmas: tuple[str, ...] = ()
-    metrics: dict[str, float] | None = None
+    elapsed_seconds: float = 0.0
+
+    @property
+    def unique_lemmas(self) -> tuple[str, ...]:
+        seen: set[str] = set()
+        lemmas: list[str] = []
+        for token in self.tokens:
+            key = token.lemma.casefold()
+            if key in seen:
+                continue
+            seen.add(key)
+            lemmas.append(token.lemma)
+        return tuple(lemmas)
 
     def to_dict(self) -> dict[str, object]:
         return {
             "language": self.language,
-            "lemmas": list(self.unique_lemmas),
-            "tokens": [token.__dict__ for token in self.tokens],
-            "expected_lemmas": list(self.expected_lemmas),
-            "metrics": self.metrics,
+            "elapsed_seconds": self.elapsed_seconds,
+            "unique_lemmas": list(self.unique_lemmas),
+            "tokens": [
+                {
+                    "surface": token.surface,
+                    "lemma": token.lemma,
+                    "language": token.language,
+                    "backend": token.backend,
+                    "pos": token.pos,
+                }
+                for token in self.tokens
+            ],
         }
-
-    def to_json(self) -> str:
-        return json.dumps(self.to_dict(), ensure_ascii=False, indent=2)
-
-
-@dataclass(frozen=True)
-class TextFilePair:
-    prefix: str
-    language: str
-    text_path: Path
-    entities_path: Path | None

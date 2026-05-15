@@ -66,3 +66,44 @@ Current CPU validation on `val/*.txt`:
 - warmed max: about `0.18s`
 
 `langs.txt` includes Russian, and the implementation supports it, but the current `val/` directory does not include `ru.txt`.
+
+## gRPC service
+
+The service uses protobuf/gRPC and exposes two RPCs:
+
+- `Lemmatize(LemmatizeRequest) returns (LemmaResult)`
+- `LemmatizeBatch(LemmatizeBatchRequest) returns (LemmatizeBatchResponse)`
+
+Backend routing is configured in `config.json`. The default config routes `de`, `ja`, `uk`, `sv`, `hr`, and `nb` to spaCy and the remaining supported service languages to UDPipe. Models are loaded once during service startup and reused for requests.
+
+Install service dependencies and make sure model packages are present:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m spacy validate
+```
+
+Run the service:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_lemmatizer_service.py --config config.json --host 127.0.0.1 --port 50051
+```
+
+Regenerate protobuf bindings after editing `lemmatizer/proto/lemmatizer.proto`:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\generate_proto.py
+```
+
+Minimal Python client:
+
+```python
+import grpc
+
+from lemmatizer.proto import lemmatizer_pb2, lemmatizer_pb2_grpc
+
+with grpc.insecure_channel("127.0.0.1:50051") as channel:
+    stub = lemmatizer_pb2_grpc.LemmatizerServiceStub(channel)
+    response = stub.Lemmatize(lemmatizer_pb2.LemmatizeRequest(language="de", text="Die alten Haeuser standen."))
+    print(response.unique_lemmas)
+```

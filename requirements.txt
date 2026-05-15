@@ -1,8 +1,14 @@
 fugashi==1.5.2
+grpcio==1.76.0
+grpcio-tools==1.76.0
 jieba==0.42.1
 kiwipiepy==0.23.1
 kiwipiepy_model==0.23.0
+protobuf==6.33.6
 regex==2026.5.9
 simplemma==1.1.2
+spacy==3.8.14
+spacy-udpipe==1.0.0
 stanza==1.11.1
+ufal.udpipe==1.4.0.1
 unidic-lite==1.0.8

@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package lemmatizer.v1;
+
+service LemmatizerService {
+  rpc Lemmatize(LemmatizeRequest) returns (LemmaResult);
+  rpc LemmatizeBatch(LemmatizeBatchRequest) returns (LemmatizeBatchResponse);
+}
+
+message LemmatizeRequest {
+  string language = 1;
+  string text = 2;
+}
+
+message LemmatizeBatchRequest {
+  repeated LemmatizeRequest items = 1;
+}
+
+message LemmatizeBatchResponse {
+  repeated LemmaResult results = 1;
+}
+
+message LemmaResult {
+  string language = 1;
+  double elapsed_seconds = 2;
+  repeated string unique_lemmas = 3;
+  repeated LemmaToken tokens = 4;
+}
+
+message LemmaToken {
+  string surface = 1;
+  string lemma = 2;
+  string language = 3;
+  string backend = 4;
+  string pos = 5;
+}

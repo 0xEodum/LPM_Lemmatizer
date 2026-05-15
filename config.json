@@ -1,0 +1,32 @@
+{
+  "udpipe": [
+    "be",
+    "bg",
+    "cs",
+    "da",
+    "en",
+    "es",
+    "et",
+    "fi",
+    "fr",
+    "he",
+    "hy",
+    "id",
+    "it",
+    "ko",
+    "lv",
+    "pt",
+    "ru",
+    "sk",
+    "tr",
+    "zh"
+  ],
+  "spacy": [
+    "de",
+    "ja",
+    "uk",
+    "sv",
+    "hr",
+    "nb"
+  ]
+}

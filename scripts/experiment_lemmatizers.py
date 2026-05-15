@@ -34,6 +34,7 @@ class CandidateResult:
     language: str
     supported: bool
     elapsed_seconds: float
+    warmed_elapsed_seconds: float
     passed: int
     total: int
     error: str
@@ -118,6 +119,24 @@ STANZA_PROCESSORS = {
 UDPIPE_CODES = {
     "nb": "nb",
     **{code: code for code in CONTENT_LANGUAGES | {"ru"}},
+}
+
+SPACY_MODELS = {
+    "da": "da_core_news_sm",
+    "de": "de_core_news_sm",
+    "en": "en_core_web_sm",
+    "es": "es_core_news_sm",
+    "fi": "fi_core_news_sm",
+    "fr": "fr_core_news_sm",
+    "hr": "hr_core_news_sm",
+    "it": "it_core_news_sm",
+    "ja": "ja_core_news_sm",
+    "ko": "ko_core_news_sm",
+    "nb": "nb_core_news_sm",
+    "pt": "pt_core_news_sm",
+    "sv": "sv_core_news_sm",
+    "uk": "uk_core_news_sm",
+    "zh": "zh_core_web_sm",
 }
 
 PROBES = (
@@ -287,6 +306,28 @@ class UDPipeCandidate:
         return tuple(tokens)
 
 
+class SpacyCandidate:
+    name = "spacy"
+
+    def __init__(self, download_missing: bool) -> None:
+        self._download_missing = download_missing
+
+    def supports(self, language: str) -> bool:
+        return language in SPACY_MODELS
+
+    def lemmatize(self, text: str, language: str) -> tuple[LemmaToken, ...]:
+        model_name = SPACY_MODELS[language]
+        if self._download_missing:
+            _download_spacy_model(model_name)
+        doc = _spacy_pipeline(model_name)(text)
+        tokens = []
+        for token in doc:
+            lemma = clean_lemma(token.lemma_ or token.text)
+            if is_usable_lemma(lemma):
+                tokens.append(LemmaToken(token.text, lemma, language, self.name, token.pos_))
+        return tuple(tokens)
+
+
 @lru_cache(maxsize=32)
 def _stanza_pipeline(language: str, processors: str):
     import stanza
@@ -337,6 +378,25 @@ def _looks_like_udpipe_model(path: Path) -> bool:
     return not path.read_bytes()[:64].lstrip().lower().startswith(b"<!doctype html")
 
 
+@lru_cache(maxsize=32)
+def _spacy_pipeline(model_name: str):
+    import spacy
+
+    return spacy.load(
+        model_name,
+        exclude=["parser", "ner", "textcat", "textcat_multilabel", "senter", "sentencizer"],
+    )
+
+
+def _download_spacy_model(model_name: str) -> None:
+    import spacy
+    from spacy.cli import download
+
+    if spacy.util.is_package(model_name):
+        return
+    download(model_name)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Compare lemmatization libraries on analysis.txt regression probes.")
     parser.add_argument("--root", type=Path, default=ROOT / "val", help="Directory with validation *.txt files.")
@@ -350,6 +410,7 @@ def main(argv: list[str] | None = None) -> int:
         SimplemmaCandidate(),
         StanzaCandidate(args.download_missing),
         UDPipeCandidate(args.download_missing),
+        SpacyCandidate(args.download_missing),
     )
     results = run_experiment(args.root, candidates)
     args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -378,7 +439,7 @@ def _run_candidate(
     probes: tuple[Probe, ...],
 ) -> CandidateResult:
     if not candidate.supports(language):
-        return CandidateResult(candidate.name, language, False, 0.0, 0, len(probes), "unsupported", (), ())
+        return CandidateResult(candidate.name, language, False, 0.0, 0.0, 0, len(probes), "unsupported", (), ())
     started = time.perf_counter()
     try:
         tokens = candidate.lemmatize(text, language)
@@ -388,6 +449,7 @@ def _run_candidate(
             language,
             True,
             time.perf_counter() - started,
+            0.0,
             0,
             len(probes),
             f"{type(exc).__name__}: {exc}",
@@ -395,6 +457,23 @@ def _run_candidate(
             (),
         )
     elapsed = time.perf_counter() - started
+    warm_started = time.perf_counter()
+    try:
+        candidate.lemmatize(text, language)
+    except Exception as exc:
+        return CandidateResult(
+            candidate.name,
+            language,
+            True,
+            elapsed,
+            time.perf_counter() - warm_started,
+            0,
+            len(probes),
+            f"warm {type(exc).__name__}: {exc}",
+            (),
+            (),
+        )
+    warmed_elapsed = time.perf_counter() - warm_started
     unique_lemmas = _unique(token.lemma for token in tokens)
     failed = tuple(_failed_probe(probe, unique_lemmas) for probe in probes if _failed_probe(probe, unique_lemmas))
     return CandidateResult(
@@ -402,6 +481,7 @@ def _run_candidate(
         language,
         True,
         elapsed,
+        warmed_elapsed,
         len(probes) - len(failed),
         len(probes),
         "",
@@ -452,27 +532,42 @@ def render_markdown(results: list[CandidateResult]) -> str:
         by_language.setdefault(result.language, []).append(result)
 
     aggregate = _aggregate_scores(results)
+    spacy_subset = _spacy_subset_scores(results)
     lines = [
         "# Lemmatizer backend experiment",
         "",
         "Probe set: concrete failure cases from `analysis.txt`, scored as expected lemma present and named bad lemma absent. This is a targeted regression benchmark, not a balanced corpus metric; low `current`/`simplemma` scores are expected because the probes were selected from their observed mistakes.",
         "",
-        "Tie break: when candidates pass the same number of probes, the faster successful run is listed as best.",
+        "Fresh elapsed includes first pipeline/model load inside the process. Warm elapsed is an immediate second pass with cached pipelines and is the better proxy for steady-state service speed.",
+        "",
+        "Tie break: when candidates pass the same number of probes, the faster warm run is listed as best.",
         "",
         "## Aggregate Probe Score",
         "",
-        "| Candidate | Score | Languages run | Elapsed |",
-        "| --- | ---: | ---: | ---: |",
+        "| Candidate | Score | Languages run | Fresh elapsed | Warm elapsed |",
+        "| --- | ---: | ---: | ---: | ---: |",
         *[
-            f"| {candidate} | {passed}/{total} ({passed / total:.3f}) | {languages} | {elapsed:.2f}s |"
-            for candidate, passed, total, languages, elapsed in aggregate
+            f"| {candidate} | {passed}/{total} ({passed / total:.3f}) | {languages} | {elapsed:.2f}s | {warmed_elapsed:.2f}s |"
+            for candidate, passed, total, languages, elapsed, warmed_elapsed in aggregate
+            if total
+        ],
+        "",
+        "## spaCy-Covered Probe Subset",
+        "",
+        "This table compares candidates only on languages where spaCy had an installed official pipeline and at least one probe.",
+        "",
+        "| Candidate | Score | Languages run | Fresh elapsed | Warm elapsed |",
+        "| --- | ---: | ---: | ---: | ---: |",
+        *[
+            f"| {candidate} | {passed}/{total} ({passed / total:.3f}) | {languages} | {elapsed:.2f}s | {warmed_elapsed:.2f}s |"
+            for candidate, passed, total, languages, elapsed, warmed_elapsed in spacy_subset
             if total
         ],
         "",
         "## Per-Language Result",
         "",
-        "| Language | Best candidate | Score | Current | Simplemma | Stanza | UDPipe | Notes |",
-        "| --- | --- | ---: | ---: | ---: | ---: | ---: | --- |",
+        "| Language | Best candidate | Score | Current | Simplemma | Stanza | UDPipe | spaCy | Notes |",
+        "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
     ]
     for language in sorted(by_language):
         row = by_language[language]
@@ -480,7 +575,7 @@ def render_markdown(results: list[CandidateResult]) -> str:
         cells = {result.candidate: _score_cell(result) for result in row}
         notes = _notes(best, row)
         lines.append(
-            "| {language} | {best_candidate} | {best_score} | {current} | {simplemma} | {stanza} | {udpipe} | {notes} |".format(
+            "| {language} | {best_candidate} | {best_score} | {current} | {simplemma} | {stanza} | {udpipe} | {spacy} | {notes} |".format(
                 language=language,
                 best_candidate=best.candidate if best else "n/a",
                 best_score=_score_cell(best) if best else "n/a",
@@ -488,6 +583,7 @@ def render_markdown(results: list[CandidateResult]) -> str:
                 simplemma=cells.get("simplemma", "n/a"),
                 stanza=cells.get("stanza", "n/a"),
                 udpipe=cells.get("udpipe", "n/a"),
+                spacy=cells.get("spacy", "n/a"),
                 notes=notes,
             )
         )
@@ -518,23 +614,37 @@ def _best_result(results: list[CandidateResult]) -> CandidateResult | None:
     valid = [result for result in results if result.supported and not result.error]
     if not valid:
         return None
-    return max(valid, key=lambda item: (item.passed / item.total if item.total else 0.0, -item.elapsed_seconds))
+    return max(valid, key=lambda item: (item.passed / item.total if item.total else 0.0, -_tie_elapsed(item)))
 
 
-def _aggregate_scores(results: list[CandidateResult]) -> list[tuple[str, int, int, int, float]]:
+def _aggregate_scores(results: list[CandidateResult]) -> list[tuple[str, int, int, int, float, float]]:
+    return _score_rows(results)
+
+
+def _spacy_subset_scores(results: list[CandidateResult]) -> list[tuple[str, int, int, int, float, float]]:
+    spacy_languages = {
+        result.language
+        for result in results
+        if result.candidate == "spacy" and result.supported and not result.error and result.total > 0
+    }
+    return _score_rows([result for result in results if result.language in spacy_languages])
+
+
+def _score_rows(results: list[CandidateResult]) -> list[tuple[str, int, int, int, float, float]]:
     aggregate: dict[str, list[float]] = {}
     for result in results:
         if result.error or not result.supported:
             continue
-        passed, total, languages, elapsed = aggregate.setdefault(result.candidate, [0.0, 0.0, 0.0, 0.0])
+        passed, total, languages, elapsed, warmed_elapsed = aggregate.setdefault(result.candidate, [0.0, 0.0, 0.0, 0.0, 0.0])
         aggregate[result.candidate] = [
             passed + result.passed,
             total + result.total,
             languages + 1,
             elapsed + result.elapsed_seconds,
+            warmed_elapsed + result.warmed_elapsed_seconds,
         ]
     return [
-        (candidate, int(values[0]), int(values[1]), int(values[2]), values[3])
+        (candidate, int(values[0]), int(values[1]), int(values[2]), values[3], values[4])
         for candidate, values in sorted(aggregate.items(), key=lambda item: item[0])
     ]
 
@@ -542,13 +652,17 @@ def _aggregate_scores(results: list[CandidateResult]) -> list[tuple[str, int, in
 def _score_cell(result: CandidateResult | None) -> str:
     if result is None:
         return "n/a"
-    if result.error:
-        return "error"
     if not result.supported:
         return "unsupported"
+    if result.error:
+        return "error"
     if result.total == 0:
         return "no probes"
     return f"{result.passed}/{result.total}"
+
+
+def _tie_elapsed(result: CandidateResult) -> float:
+    return result.warmed_elapsed_seconds or result.elapsed_seconds
 
 
 def _notes(best: CandidateResult | None, row: list[CandidateResult]) -> str:

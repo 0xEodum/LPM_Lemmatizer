@@ -1,2 +1,3 @@
+spacy==3.8.14
 spacy-udpipe==1.0.0
 ufal.udpipe==1.4.0.1
